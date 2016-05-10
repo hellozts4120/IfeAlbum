@@ -1,0 +1,14 @@
+{
+  "name": "ife-album",
+  "version": "1.0.0",
+  "description": "ife muti-functional album library",
+  "main": "build/IfeAlbum.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "IfeAlbum"
+  ],
+  "author": "Tianshu Zhou",
+  "license": "MIT"
+}
