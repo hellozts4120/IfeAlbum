@@ -1,6 +1,6 @@
-var GalleryWaterfall = function (selector, col) {
+var GalleryWaterfall = function (selector) {
     this.target = document.querySelector(selector);
-    this.col = col || 5;
+    this.col = this.setCol();
     this.init();
 }
 
@@ -14,21 +14,37 @@ GalleryWaterfall.prototype.init = function() {
     this.columns = this.target.querySelectorAll('.gallery-column');
 }
 
+GalleryWaterfall.prototype.setCol = function() {
+    var col = 2;
+    if (innerWidth > 1200) {
+        col = 5;
+    }
+    else if (innerWidth > 992) {
+        col = 4;
+    }
+    else if (innerWidth > 768) {
+        col = 3;
+    }
+    return col;
+}
+
 GalleryWaterfall.prototype.append = function(photos) {
     photos.forEach((function(photo) {
         var item = document.createElement("div");
         item.className = "gallery-item";
         item.innerHTML = 
             '<div class="gallery-photo">' +
-                '<img class="gallery-image" data-large="' + photo.image.large + '" src="' + photo.image.small + '">' +
-            '</div>' +
-            '<div class="gallery-photo-info">' +
-                '<div class="gallery-photo-name">' + photo.name + '</div>' +
-                '<div class="gallery-photo-description">' + photo.description + '</div>' +
+                '<img class="gallery-image"' + '" src="' + photo + '">' +
             '</div>';
         this.getMinCol().appendChild(item);
         item.querySelector('.gallery-photo').style.height = parseInt(item.clientWidth / photo.aspect_ratio) + 'px';
     }).bind(this));
+}
+
+GalleryWaterfall.prototype.clear = function() {
+    for (var i = 0; i < this.columns.length; i++) {
+        this.columns[i].innerHTML = "";
+    }
 }
 
 GalleryWaterfall.prototype.getMinCol = function() {

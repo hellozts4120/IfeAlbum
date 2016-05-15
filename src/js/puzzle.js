@@ -9,13 +9,7 @@ GalleryPuzzle.prototype.init = function() {
     this.target.classList.add('gallery-' + this.photos.length);
     this.target.innerHTML = this.photos.reduce(function(html, item) {
         html += 
-            '<div class="gallery-item" style="background-image: url(' + item.image.large + ')">' +
-                '<div class="gallery-photo-info">' +
-                    '<div class="gallery-photo-info-wapper">' +
-                        '<div class="gallery-photo-name">' + item.name + '</div>' +
-                        '<div class="gallery-photo-description">' + item.description + '</div>' +
-                    '</div>' +
-                '</div>' +
+            '<div class="gallery-item" style="background-image: url(' + item + ')">' +
             '</div>'
         return html;    
     }, '');

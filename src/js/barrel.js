@@ -17,9 +17,9 @@ GalleryBarrel.prototype.append = function (photos) {
             html +=
             '<div class="gallery-item-wrapper">' +
                 '<div class="gallery-item">' +
-                    '<img ' + 'title="' + photo.name + '" ' + 
-                    'class="gallery-image" data-large="' + photo.image.large + '" ' + 
-                    'src="' + photo.image.small + '">' +
+                    '<img ' + 
+                    'class="gallery-image" ' + 
+                    'src="' + photo + '">' +
                 '</div>' +
             '</div>'
             return html;
@@ -28,16 +28,29 @@ GalleryBarrel.prototype.append = function (photos) {
     });    
 }
 
+GalleryBarrel.prototype.clear = function () {
+    var gallery = document.querySelector(".gallery");
+    gallery.innerHTML = "";
+    this.photos = [];
+}
+
 GalleryBarrel.prototype.getRows = function (photos) {
     photos = this.photos.concat(photos);
     var aspectRatio = 0;
     var rows = [];
     var _photos = [];
     
-    for (var i = 0; i < photos.length; i += 1) {
+    for (var i = 0; i < photos.length; i++) {
         _photos.push(photos[i]);
-        aspectRatio += photos[i].aspect_ratio;
-
+        var img = new Image();
+        img.src = photos[i];
+        document.querySelector(".gallery1").appendChild(img);
+        img = document.querySelector(".gallery1").childNodes[i];
+        console.log(img.naturalWidth);
+        
+        //TODO
+        
+        aspectRatio += parseFloat(img.naturalWidth / img.naturalHeight); 
         if (aspectRatio > this.minAspectRatio) {
             rows.push({
                 aspectRatio: aspectRatio,
@@ -46,9 +59,14 @@ GalleryBarrel.prototype.getRows = function (photos) {
             _photos = [];
             aspectRatio = 0;
         }
+        
+        console.log(aspectRatio)
+
+        
     }
 
     this.photos = _photos;
+    console.log(rows);
     return rows;
 }
 

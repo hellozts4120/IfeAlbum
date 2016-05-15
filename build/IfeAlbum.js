@@ -18,14 +18,9 @@
         // this.xxx = ...
         
         this.isFullScreenEnabled = false;
-        this.spinner = document.querySelector('.spinner');
         this.modal = new Modal();
-        this.loading = false;
-        this.source = '500px';
-        this.page = 0;
-        this.setLayout(2);
-        this.load();
-        window.addEventListener('scroll', this.scroll.bind(this));
+        this.setLayout(3);
+        this.setImage(["../src/img/1.png", "../src/img/2.png"])
 
     }
 
@@ -59,13 +54,8 @@
         }
 
         // 你的实现
-        this.photos = [];
-        var that = this;
-        image.forEach(function(item, index, array){
-            that.photos.push({image: {large: item, small: item}});
-        });
-        console.log(this.photos);
-        this.layout.init();
+        this.layout.clear();
+        this.layout.append(image);
     };
 
 
@@ -76,7 +66,7 @@
      * @return {HTMLElement[]} 相册所有图像对应的 DOM 元素组成的数组
      */
     IfeAlbum.prototype.getImageDomElements = function() {
-        
+        return document.querySelectorAll('.gallery-image');
     };
 
 
@@ -87,7 +77,13 @@
      * @param {(string|string[])} image 一张图片的 URL 或多张图片 URL 组成的数组
      */
     IfeAlbum.prototype.addImage = function (image) {
-
+        if (typeof image === 'string') {
+            // 包装成数组处理
+            this.addImage([image]);
+            return;
+        }
+        this.layout.append(image);
+        
     };
 
 
@@ -98,7 +94,7 @@
      * @return {boolean} 是否全部移除成功
      */
     IfeAlbum.prototype.removeImage = function (image) {
-
+        this.layout.clear();
     };
 
 
@@ -114,13 +110,13 @@
                 that.layout = new GalleryPuzzle('.gallery', that.photos);
                 break;
             case 2:
-                that.layout = new GalleryWaterfall('.gallery', 5);
+                that.layout = new GalleryWaterfall('.gallery');
                 break;
             case 3:
                 that.layout = new GalleryBarrel('.gallery');
                 break;
         }
-        this.layout.name = Object.keys(this.LAYOUT)[layout-1];
+        this.layout.name = Object.keys(this.LAYOUT)[layout - 1];
     };
 
 
@@ -255,26 +251,6 @@
         if (_target.className == 'gallery-image') {
             this.modal.show(_target.dataset.large, _target.clientWidth, _target.clientHeight);
         }
-    }
-
-    IfeAlbum.prototype.scroll = function () {
-        var scrollTop = document.body.scrollTop || document.documentElement.scrollTop;
-        if (scrollTop + innerHeight >= document.body.clientHeight && !this.loading) {
-            this.load();
-        }
-    }
-
-    IfeAlbum.prototype.loaded = function (photos) {
-        this.spinner.style.display = 'none';
-        this.loading = false;
-        console.log(photos);
-        this.layout.append(photos);
-    }
-
-    IfeAlbum.prototype.load = function () {
-        this.spinner.style.display = 'block';
-        this.loading = true;
-        getPhotos(this.page++, this.source).then(this.loaded.bind(this));
     }
 
 
