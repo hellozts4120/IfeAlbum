@@ -1,8 +1,9 @@
 var GalleryBarrel = function (selector, minHeight) {
-    minHeight = minHeight || 300
+    this.minHeight = minHeight || 300;
+    this.maxHeight = maxHeight || 1000;
     this.target = document.querySelector(selector);
     this.padding = 8;
-    this.minAspectRatio = this.target.clientWidth / minHeight;
+    this.minAspectRatio = this.target.clientWidth / this.minHeight;
     this.photos = [];
 }
 
@@ -26,6 +27,18 @@ GalleryBarrel.prototype.append = function (photos) {
         }, '')
         that.target.appendChild(_row);
     });    
+}
+
+GalleryBarrel.prototype.setHeight = function (min, max) {
+    min = min || 0;
+    max = max || 0;
+    if (min > 0) {
+        this.minHeight = min;
+        this.minAspectRatio = this.target.clientWidth / this.minHeight;
+    }
+    if (max > 0) {
+        this.maxHeight = max;
+    }
 }
 
 GalleryBarrel.prototype.clear = function () {
@@ -66,7 +79,6 @@ GalleryBarrel.prototype.getRows = function (photos) {
     }
 
     this.photos = _photos;
-    console.log(rows);
+    console.log(this.photos);
     return rows;
 }
-

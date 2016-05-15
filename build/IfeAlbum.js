@@ -2,7 +2,254 @@
 
     // 由于是第三方库，我们使用严格模式，尽可能发现潜在问题
     'use strict';
+    
+    
+    var GalleryPuzzle = function(src) {
+        this.target = document.querySelector(src);
+        this.photos = [];
+    }
+    
+    GalleryPuzzle.prototype.init = function () {
+        this.target.classList.add('gallery-' + this.photos.length);
+        this.target.innerHTML = this.photos.reduce(function(html, item) {
+            html += 
+                '<div class="gallery-item" style="background-image: url(' + item + ')">' +
+                '</div>'
+            return html;    
+        }, '');
+        var doms = document.querySelectorAll(".gallery-item");
+        var that = this;
+    }
+    
+    GalleryPuzzle.prototype.append = function(photos) {
+        this.photos = photos.slice(0, 6);
+        this.init();
+        this.setSize();
+    }
+    
+    GalleryPuzzle.prototype.clear = function() {
+        this.photos = [];
+        this.setSize();
+    }
 
+    GalleryPuzzle.prototype.setSize = function() {
+        if (this.photos.length == 0) {
+            return;
+        }
+        
+        var item = this.target.querySelectorAll(".gallery-item");
+        this["size" + this.photos.length]().forEach(function(size, i) {
+            item[i].style.width = size.width + 'px';
+            item[i].style.height = size.height + 'px';
+            if (size.right) {
+                item[i].style.float = "right";
+            }
+        })
+    }
+
+    GalleryPuzzle.prototype.size1 = function() {
+        return [
+            {
+                width: this.target.clientWidth,
+                height: this.target.clientHeight
+            }
+        ];
+    }
+
+    GalleryPuzzle.prototype.size2 = function() {
+        var width = this.target.clientWidth * 2 / 3
+        
+        return [
+            {
+              width: width,
+              height: this.target.clientHeight
+            },
+            
+            {
+              width: width,
+              height: this.target.clientHeight
+            }
+        ];
+    }
+
+    GalleryPuzzle.prototype.size3 = function() {
+        var length = this.target.clientHeight / 2;
+        return [
+            {
+                width: this.target.clientWidth - length,
+                height: this.target.clientHeight
+            },
+            
+            {
+                width: length,
+                height: length
+            },
+            
+            {
+                width: length,
+                height: length
+            }
+        ];
+    }
+
+    GalleryPuzzle.prototype.size4 = function() {
+        var width = this.target.clientWidth / 2;
+        var height = this.target.clientHeight / 2;
+        return [
+            {
+                width: width,
+                height: height
+            },
+            
+            {
+                width: width,
+                height: height
+            },
+            
+            {
+                width: width,
+                height: height
+            },
+            
+            {
+                width: width,
+                height: height
+            }
+        ];
+    }
+
+    GalleryPuzzle.prototype.size5 = function() {
+        var width = this.target.clientWidth / 3;
+        var height = this.target.clientHeight / 3;
+        var returnObj = [
+            {
+                width: width * 2,
+                height: height * 2
+            },
+            
+            {
+                right: true,
+                width: width,
+                height: width
+            },
+            
+            {
+                right: true,
+                width: width,
+                height: this.target.clientHeight - width
+            },
+            
+            {
+                width: width,
+                height: height
+            },
+            
+            {
+                width: width,
+                height: height
+            }
+        ];
+        if (this.target.clientWidth > this.target.clientHeight * 2) {
+            returnObj.push(returnObj.splice(2, 1)[0])
+        }
+      
+        return returnObj;
+    }
+
+    GalleryPuzzle.prototype.size6 = function() {
+        var width = this.target.clientWidth / 3;
+        var height = this.target.clientHeight / 3;
+        return [
+            {
+                width: width * 2,
+                height: height * 2
+            },
+            
+            {
+                width: width,
+                height: height
+            },
+            
+            {
+                width: width,
+                height: height
+            },
+            
+            {
+                width: width,
+                height: height
+            },
+            
+            {
+                width: width,
+                height: height
+            },
+            
+            {
+                width: width,
+                height: height
+            }
+        ];
+    }
+    
+    var GalleryWaterfall = function (selector) {
+        this.target = document.querySelector(selector);
+        this.col = this.setCol();
+        this.init();
+    }
+
+    GalleryWaterfall.prototype.init = function() {
+        var width = this.target.clientWidth / this.col;
+        var html = "";
+        for (var i = 0; i < this.col; i++) {
+            html += '<div class="gallery-column" style="width: ' + width + 'px"></div>';
+        }
+        this.target.innerHTML = html;
+        this.columns = this.target.querySelectorAll('.gallery-column');
+    }
+
+    GalleryWaterfall.prototype.setCol = function() {
+        var col = 2;
+        if (innerWidth > 1200) {
+            col = 5;
+        }
+        else if (innerWidth > 992) {
+            col = 4;
+        }
+        else if (innerWidth > 768) {
+            col = 3;
+        }
+        return col;
+    }
+
+    GalleryWaterfall.prototype.append = function(photos) {
+        photos.forEach((function(photo) {
+            var item = document.createElement("div");
+            item.className = "gallery-item";
+            item.innerHTML = 
+                '<div class="gallery-photo">' +
+                    '<img class="gallery-image"' + '" src="' + photo + '">' +
+                '</div>';
+            this.getMinCol().appendChild(item);
+            item.querySelector('.gallery-photo').style.height = parseInt(item.clientWidth / photo.aspect_ratio) + 'px';
+        }).bind(this));
+    }
+
+    GalleryWaterfall.prototype.clear = function() {
+        for (var i = 0; i < this.columns.length; i++) {
+            this.columns[i].innerHTML = "";
+        }
+    }
+
+    GalleryWaterfall.prototype.getMinCol = function() {
+        var min = this.columns[0];
+        for (var i = 0; i < this.columns.length; i++) {
+            if (this.columns[i].clientHeight < min.clientHeight) {
+                min = this.columns[i];
+            }
+        }
+        return min;
+    }
 
 
     function IfeAlbum() {
@@ -19,8 +266,8 @@
         
         this.isFullScreenEnabled = false;
         this.modal = new Modal();
-        this.setLayout(3);
-        this.setImage(["../src/img/1.png", "../src/img/2.png"])
+        this.setLayout(1);
+        this.setImage(["../src/img/1.png", "../src/img/2.png", "../src/img/3.png", "../src/img/4.png", "../src/img/5.png", "../src/img/6.png", "../src/img/7.png"])
 
     }
 
@@ -54,6 +301,7 @@
         }
 
         // 你的实现
+        this.photos = image;
         this.layout.clear();
         this.layout.append(image);
     };
@@ -82,7 +330,11 @@
             this.addImage([image]);
             return;
         }
+        
+        this.photos.concat(image);
         this.layout.append(image);
+        
+        //TODO
         
     };
 
@@ -107,7 +359,7 @@
         var that = this;
         switch(layout) {
             case 1:
-                that.layout = new GalleryPuzzle('.gallery', that.photos);
+                that.layout = new GalleryPuzzle('.gallery');
                 break;
             case 2:
                 that.layout = new GalleryWaterfall('.gallery');
@@ -139,7 +391,23 @@
      * @param {number} [y] 图片之间的纵向间距，如果是 undefined 则等同于 x
      */
     IfeAlbum.prototype.setGutter = function (x, y) {
-
+        if (x == undefined) {
+            console.error("x must be greater than 0!");
+            return;
+        }
+        if (this.getLayout() == "PUZZLE") {
+            console.error("拼图布局，为获得良好体验，不能设置图片间距！");
+            return;
+        }
+        y = y || x;
+        this.gutter = [x, y];
+        var images = document.querySelectorAll('.gallery-item');
+        for (var i = 0; i < images.length; i++) {
+            images[i].style.borderTop = (y / 2) + 'px solid #f0f0f0';
+            images[i].style.borderBottom = (y / 2) + 'px solid #f0f0f0';
+            images[i].style.borderLeft = (x / 2) + 'px solid #f0f0f0';
+            images[i].style.borderRight = (x / 2) + 'px solid #f0f0f0';
+        }
     };
 
 
@@ -182,7 +450,7 @@
 
         // 注意异常情况的处理，做一个健壮的库
         if (min === undefined || max === undefined || min > max) {
-            console.error('...');
+            console.error('error occurs!');
             return;
         }
 
@@ -218,7 +486,14 @@
      * @param {number} max 最大高度
      */
     IfeAlbum.prototype.setBarrelHeight = function (min, max) {
-
+        if (this.getLayout() != "BARREL") {
+            console.error("Not Barrel now!");
+            return;
+        }
+        if (max < min) {
+            console.error("max height must be greater or same as the min height!");
+        }
+        this.layout.setHeight(min, max);
     };
 
 
@@ -228,7 +503,7 @@
      * @return {number} 最多图片数（含）
      */
     IfeAlbum.prototype.getBarrelHeightMax = function () {
-
+        
     };
 
 
@@ -238,7 +513,7 @@
      * @return {number} 最少图片数（含）
      */
     IfeAlbum.prototype.getBarrelHeightMin = function () {
-
+        
     };
 
 
@@ -248,8 +523,8 @@
     
     IfeAlbum.prototype.click = function (event) {
         var _target = event.target;
-        if (_target.className == 'gallery-image') {
-            this.modal.show(_target.dataset.large, _target.clientWidth, _target.clientHeight);
+        if ((_target.className == 'gallery-image') || (this.getLayout() == "PUZZLE" && _target.className == "gallery-item")) {
+            this.modal.show(_target.src || _target.style.backgroundImage.split("\"")[1], _target.clientWidth, _target.clientHeight);
         }
     }
 
@@ -266,3 +541,6 @@
     }
 
 }(window));
+
+ifeAlbum.enableFullscreen();
+//ifeAlbum.setGutter(10,10);
