@@ -11,6 +11,22 @@ function addEvent(element, event, listener) {
     }
 }
 
+function imgIsLoad(urlArr, fn) {
+        var imgList = [], n = 0;
+        for(var i = 0, m = urlArr.length; i < m; i++){
+            imgList.push(new Image());
+            imgList[i].index = i;
+            imgList[i].src = urlArr[i];
+            imgList[i].onload = imgList[i].onerror = function() {
+                if(fn) {
+                    this.serial = n++;
+                    if(n === urlArr.length) fn.call(this, true);
+                    else fn.call(this, false);          
+                }   
+            }
+        }
+    }
+
 function request(url) {
     return new Promise(function(resolve) {
         var xhr = new XMLHttpRequest();

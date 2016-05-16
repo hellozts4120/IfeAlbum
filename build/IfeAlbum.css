@@ -24,9 +24,16 @@ html, body, .gallery {
 }
 
 .gallery-image {
-    width: 100%;
     display: block;
     cursor: zoom-in;
+}
+
+.gallery-photo .gallery-image {
+    width: 100%;
+}
+
+.gallery-item .gallery-image {
+    height: 100%;
 }
 
 .gallery-image:hover {
@@ -69,6 +76,10 @@ html, body, .gallery {
     background-position: center;
     overflow: hidden;
     position: relative;
+}
+
+.gallery-item-wrapper .gallery-item {
+    height: 100%;
 }
 
 .gallery-item:hover .gallery-photo-info {
