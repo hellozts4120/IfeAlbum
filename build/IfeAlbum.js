@@ -256,17 +256,25 @@
         this.target = document.querySelector(selector);
         this.padding = 8;
         this.minAspectRatio = this.target.clientWidth / this.minHeight;
+        this.maxAspectRatio = this.target.clientWidth / this.maxHeight;
         this.photos = [];
     }
 
     GalleryBarrel.prototype.append = function (photos) {
         var that = this;
-        console.log(photos);
-        this.getRows(photos).forEach(function (row) {
+        if (this.photos.length == 0) {
+            this.photos = photos;
+        }
+        else this.photos.concat(photos);
+        this.getRows(that.photos).forEach(function (row) {
             var totalWidth = that.target.clientWidth - (row.photos.length - 1) * that.padding;
             var _row = document.createElement("div");
             _row.className = 'gallery-row';
-            _row.style.height = parseInt(totalWidth / row.aspectRatio) + 'px';
+            var curHeight = parseInt(totalWidth / row.aspectRatio);
+            if (curHeight > that.maxHeight) {
+                curHeight = that.maxHeight;
+            }
+            _row.style.height = curHeight + 'px';
             _row.innerHTML = row.photos.reduce(function (html, photo) {
                 html +=
                 '<div class="gallery-item-wrapper">' +
@@ -292,6 +300,15 @@
         if (max > 0) {
             this.maxHeight = max;
         }
+        document.querySelector(".gallery").innerHTML = "";
+        this.append(this.photos);
+    }
+    
+    GalleryBarrel.prototype.setBin = function (min, max) {
+        this.minNum = min;
+        this.maxNum = max;
+        document.querySelector(".gallery").innerHTML = "";
+        this.append(this.photos);
     }
 
     GalleryBarrel.prototype.clear = function () {
@@ -301,7 +318,6 @@
     }
 
     GalleryBarrel.prototype.getRows = function (photos) {
-        photos = this.photos.concat(photos);
         var aspectRatio = 0;
         var rows = [];
         var _photos = [];
@@ -313,6 +329,7 @@
             aspectRatio += img.naturalWidth / img.naturalHeight;
 
             if (aspectRatio > this.minAspectRatio) {
+
                 rows.push({
                     aspectRatio: aspectRatio,
                     photos: _photos
@@ -321,10 +338,13 @@
                 aspectRatio = 0;
             }
         }
+        rows.push({
+            aspectRatio: aspectRatio,
+            photos: _photos
+        })
         
-        console.log(rows);
 
-        this.photos = _photos;
+        //this.photos = _photos;
         return rows;
     }
 
@@ -429,7 +449,9 @@
      * @return {boolean} 是否全部移除成功
      */
     IfeAlbum.prototype.removeImage = function (image) {
-        this.layout.clear();
+        return this.layout.clear(image);
+        
+        //TODO
     };
 
 
@@ -484,13 +506,28 @@
         }
         y = y || x;
         this.gutter = [x, y];
-        var images = document.querySelectorAll('.gallery-item');
-        for (var i = 0; i < images.length; i++) {
-            images[i].style.borderTop = (y / 2) + 'px solid #f0f0f0';
-            images[i].style.borderBottom = (y / 2) + 'px solid #f0f0f0';
-            images[i].style.borderLeft = (x / 2) + 'px solid #f0f0f0';
-            images[i].style.borderRight = (x / 2) + 'px solid #f0f0f0';
+        if (this.getLayout() == "WATERFALL") {
+            var images = document.querySelectorAll('.gallery-item');
+            console.log(images);
+            for (var i = 0; i < images.length; i++) {
+                images[i].style.borderTop = (y / 2) + 'px solid #f0f0f0';
+                images[i].style.borderBottom = (y / 2) + 'px solid #f0f0f0';
+                images[i].style.borderLeft = (x / 2) + 'px solid #f0f0f0';
+                images[i].style.borderRight = (x / 2) + 'px solid #f0f0f0';
+            }
         }
+        if (this.getLayout() == "BARREL") {
+            var images = document.querySelectorAll('.gallery-item-wrapper');
+            console.log(images);
+            for (var i = 0; i < images.length; i++) {
+                console.log(images[i]);
+                images[i].style.marginTop = (y / 2) + 'px solid #f0f0f0';
+                images[i].style.marginBottom = (y / 2) + 'px solid #f0f0f0';
+                images[i].style.marginLeft = (x / 2) + 'px solid #f0f0f0';
+                images[i].style.marginRight = (x / 2) + 'px solid #f0f0f0';
+            }
+        }
+        
     };
 
 
@@ -538,6 +575,12 @@
         }
 
         // 你的实现
+        if (this.getLayout() != "BARREL") {
+            console.error("Not Barrel now!");
+            return;
+        }
+        
+        this.layout.setBin(min, max);
 
     };
 
