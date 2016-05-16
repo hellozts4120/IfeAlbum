@@ -1,14 +1,21 @@
-(function (window) {
+﻿(function (window) {
 
     // 由于是第三方库，我们使用严格模式，尽可能发现潜在问题
     'use strict';
     
     
-    var GalleryPuzzle = function(src) {
-        this.target = document.querySelector(src);
+    /**
+     * 拼图布局的类
+     * 由于拼图，瀑布流，木桶布局相对独立，因此没有将其的相关事件加入IfeAlbum函数对象的原型链
+     * 反之，将三种布局作为相对独立的函数对象，在初始化相册布局时调用
+     * @param {string} selector  插入此布局的DOM结点地址
+     */
+    var GalleryPuzzle = function(selector) {
+        this.target = document.querySelector(selector);
         this.photos = [];
     }
     
+    //初始化拼图布局外层DOM结点
     GalleryPuzzle.prototype.init = function () {
         this.target.classList.add('gallery-' + this.photos.length);
         this.target.innerHTML = this.photos.reduce(function(html, item) {
@@ -20,12 +27,21 @@
         var that = this;
     }
     
+    /**
+     * 向拼图布局添加图片
+     * @param {string[]} photos  传入的图片url数组
+     */
     GalleryPuzzle.prototype.append = function(photos) {
         this.photos = photos.slice(0, 6);
         this.init();
         this.setSize();
     }
     
+    /**
+     * 清除特定的某张或某几张图片
+     * @param {string[]} image  需删除的图片url数组
+     * @return {boolean} 是否成功删除所有指定图片
+     */
     GalleryPuzzle.prototype.clear = function(image) {
         var isAll = true;
         var that = this;
@@ -42,11 +58,13 @@
         return isAll;
     }
     
+    //清除拼图布局内所有图片
     GalleryPuzzle.prototype.clearAll = function() {
         this.photos = [];
         this.setSize();
     }
-
+    
+    //根据传入的图片数量确定拼图布局方式并渲染
     GalleryPuzzle.prototype.setSize = function() {
         if (this.photos.length == 0) {
             return;
@@ -62,6 +80,7 @@
         })
     }
 
+    //一张图片时的拼图布局
     GalleryPuzzle.prototype.size1 = function() {
         return [
             {
@@ -71,6 +90,7 @@
         ];
     }
 
+    //二张图片时的拼图布局
     GalleryPuzzle.prototype.size2 = function() {
         var width = this.target.clientWidth * 2 / 3
         
@@ -87,6 +107,7 @@
         ];
     }
 
+    //三张图片时的拼图布局
     GalleryPuzzle.prototype.size3 = function() {
         var length = this.target.clientHeight / 2;
         return [
@@ -107,6 +128,7 @@
         ];
     }
 
+    //四张图片时的拼图布局
     GalleryPuzzle.prototype.size4 = function() {
         var width = this.target.clientWidth / 2;
         var height = this.target.clientHeight / 2;
@@ -133,6 +155,7 @@
         ];
     }
 
+    //五张图片时的拼图布局
     GalleryPuzzle.prototype.size5 = function() {
         var width = this.target.clientWidth / 3;
         var height = this.target.clientHeight / 3;
@@ -171,6 +194,7 @@
         return returnObj;
     }
 
+    //六张图片时的拼图布局
     GalleryPuzzle.prototype.size6 = function() {
         var width = this.target.clientWidth / 3;
         var height = this.target.clientHeight / 3;
@@ -207,12 +231,17 @@
         ];
     }
     
+    /**
+     * 瀑布流布局的类
+     * @param {string} selector  插入此布局的DOM结点地址
+     */
     var GalleryWaterfall = function (selector) {
         this.target = document.querySelector(selector);
         this.col = this.setCol();
         this.init();
     }
 
+    //初始化瀑布流布局各列DOM结点并渲染
     GalleryWaterfall.prototype.init = function() {
         var width = this.target.clientWidth / this.col;
         var html = "";
@@ -224,6 +253,11 @@
         this.photos = [];
     }
 
+    /**
+     * 根据屏幕宽度自适应设定瀑布流布局列数
+     * 为了更好的体验，禁止用户自行设定列数
+     * @return {number} 当前页面瀑布流布局列数
+     */
     GalleryWaterfall.prototype.setCol = function() {
         var col = 2;
         if (innerWidth > 1200) {
@@ -238,6 +272,10 @@
         return col;
     }
 
+    /**
+     * 向瀑布流布局添加图片并渲染
+     * @param {string[]} photos 传入的图片url数组
+     */
     GalleryWaterfall.prototype.append = function(photos) {
         if (this.photos.length == 0) {
             this.photos = photos;
@@ -262,6 +300,11 @@
         }).bind(this));
     }
     
+    /**
+     * 清除特定的某张或某几张图片
+     * @param {string[]} image  需删除的图片url数组
+     * @return {boolean} 是否成功删除所有指定图片
+     */
     GalleryWaterfall.prototype.clear = function(image) {
         var isAll = true;
         var that = this;
@@ -280,6 +323,7 @@
         return isAll;
     }
 
+    //清除瀑布流布局内所有图片
     GalleryWaterfall.prototype.clearAll = function() {
         for (var i = 0; i < this.columns.length; i++) {
             this.columns[i].innerHTML = "";
@@ -287,6 +331,10 @@
         this.photos = [];
     }
 
+    /**
+     * 获取当前高度最小的列
+     * @return {number} 当前高度最小列
+     */
     GalleryWaterfall.prototype.getMinCol = function() {
         var min = this.columns[0];
         for (var i = 0; i < this.columns.length; i++) {
@@ -297,6 +345,10 @@
         return min;
     }
     
+    /**
+     * 木桶布局的类
+     * @param {string} selector  插入此布局的DOM结点地址
+     */
     var GalleryBarrel = function (selector, minHeight, maxHeight) {
         this.minHeight = minHeight || 300;
         this.maxHeight = maxHeight || 1000;
@@ -307,6 +359,10 @@
         this.photos = [];
     }
 
+    /**
+     * 向木桶布局添加图片并渲染
+     * @param {string[]} photos 传入的图片url数组
+     */
     GalleryBarrel.prototype.append = function (photos) {
         var that = this;
         if (this.photos.length == 0) {
@@ -342,6 +398,11 @@
         });    
     }
 
+    /**
+     * 设定木桶布局每行的高度范围
+     * @param {number} min 每列高度最小值
+     * @param {number} max 每列高度最大值
+     */
     GalleryBarrel.prototype.setHeight = function (min, max) {
         min = min || 0;
         max = max || 0;
@@ -356,6 +417,11 @@
         this.append(this.photos);
     }
     
+    /**
+     * 设定木桶布局每行的图片数量范围
+     * @param {number} min 每列图片数目最小值
+     * @param {number} max 每列图片数目最大值
+     */
     GalleryBarrel.prototype.setBin = function (min, max) {
         this.minNum = min;
         this.maxNum = max;
@@ -363,6 +429,11 @@
         this.append(this.photos);
     }
 
+    /**
+     * 清除特定的某张或某几张图片
+     * @param {string[]} image  需删除的图片url数组
+     * @return {boolean} 是否成功删除所有指定图片
+     */
     GalleryBarrel.prototype.clear = function (image) {
         var isAll = true;
         var that = this;
@@ -382,12 +453,18 @@
         return isAll;
     }
     
+    //清除木桶布局内所有图片
     GalleryBarrel.prototype.clearAll = function () {
         var gallery = document.querySelector(".gallery");
         gallery.innerHTML = "";
         this.photos = [];
     }
-
+    
+    /**
+     * 获取当前布局每行高度及其中的图片
+     * @param {string[]} photos  传入的图片url数组
+     * @return {object} 每行高度及其中的图片的集合
+     */
     GalleryBarrel.prototype.getRows = function (photos) {
         var aspectRatio = 0;
         var rows = [];
@@ -717,7 +794,13 @@
     // 你想增加的其他接口
     
     
+    /**
+     * 每张图片的点击事件
+     * 当启用图片点击全屏时，点击图片可将图片放大至全屏模式
+     * @param {object} event  鼠标点击的对象
+     */
     IfeAlbum.prototype.click = function (event) {
+        console.log(typeof event)
         var _target = event.target;
         if ((_target.className == 'gallery-image') || (this.getLayout() == "PUZZLE" && _target.className == "gallery-item")) {
             this.modal.show(_target.src || _target.style.backgroundImage.split("\"")[1], _target.clientWidth, _target.clientHeight);
@@ -740,7 +823,7 @@
 
 window.onload = function () {
 
-    //ifeAlbum.enableFullscreen();
+    ifeAlbum.enableFullscreen();
     //ifeAlbum.removeImage(["../src/img/1.png"])
     //ifeAlbum.setGutter(10,10);
     //ifeAlbum.addImage(["../src/img/1.png"])
