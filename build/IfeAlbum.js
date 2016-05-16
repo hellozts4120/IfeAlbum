@@ -26,7 +26,23 @@
         this.setSize();
     }
     
-    GalleryPuzzle.prototype.clear = function() {
+    GalleryPuzzle.prototype.clear = function(image) {
+        var isAll = true;
+        var that = this;
+        for (var i = 0; i < image.length; i++) {
+            for (var j in that.photos) {
+                if (that.photos[j] == image[i]) {
+                    that.photos.splice(j, 1);
+                    break;
+                }
+                if (j == that.photos.length - 1) isAll = false;
+            }
+        }
+        this.append(that.photos);
+        return isAll;
+    }
+    
+    GalleryPuzzle.prototype.clearAll = function() {
         this.photos = [];
         this.setSize();
     }
@@ -205,6 +221,7 @@
         }
         this.target.innerHTML = html;
         this.columns = this.target.querySelectorAll('.gallery-column');
+        this.photos = [];
     }
 
     GalleryWaterfall.prototype.setCol = function() {
@@ -222,7 +239,18 @@
     }
 
     GalleryWaterfall.prototype.append = function(photos) {
-        photos.forEach((function(photo) {
+        if (this.photos.length == 0) {
+            this.photos = photos;
+        }
+        else {
+            for (var i in photos) {
+                this.photos.push(photos[i]);
+            }
+            for (var i = 0; i < this.columns.length; i++) {
+                this.columns[i].innerHTML = "";
+            }
+        }
+        this.photos.forEach((function(photo) {
             var item = document.createElement("div");
             item.className = "gallery-item";
             item.innerHTML = 
@@ -233,11 +261,30 @@
             item.querySelector('.gallery-photo').style.height = parseInt(item.clientWidth / photo.aspect_ratio) + 'px';
         }).bind(this));
     }
+    
+    GalleryWaterfall.prototype.clear = function(image) {
+        var isAll = true;
+        var that = this;
+        for (var i = 0; i < image.length; i++) {
+            for (var j in that.photos) {
+                if (that.photos[j] == image[i]) {
+                    that.photos.splice(j, 1);
+                    break;
+                }
+                if (j == that.photos.length - 1) isAll = false;
+            }
+        }
+        var photoArray = this.photos;
+        this.clearAll();
+        this.append(photoArray);
+        return isAll;
+    }
 
-    GalleryWaterfall.prototype.clear = function() {
+    GalleryWaterfall.prototype.clearAll = function() {
         for (var i = 0; i < this.columns.length; i++) {
             this.columns[i].innerHTML = "";
         }
+        this.photos = [];
     }
 
     GalleryWaterfall.prototype.getMinCol = function() {
@@ -265,7 +312,12 @@
         if (this.photos.length == 0) {
             this.photos = photos;
         }
-        else this.photos.concat(photos);
+        else {
+            for (var i in photos) {
+                this.photos.push(photos[i]);
+            }
+            document.querySelector(".gallery").innerHTML = "";
+        }
         this.getRows(that.photos).forEach(function (row) {
             var totalWidth = that.target.clientWidth - (row.photos.length - 1) * that.padding;
             var _row = document.createElement("div");
@@ -311,7 +363,26 @@
         this.append(this.photos);
     }
 
-    GalleryBarrel.prototype.clear = function () {
+    GalleryBarrel.prototype.clear = function (image) {
+        var isAll = true;
+        var that = this;
+        console.log(that.photos);
+        for (var i = 0; i < image.length; i++) {
+            for (var j in that.photos) {
+                if (that.photos[j] == image[i]) {
+                    that.photos.splice(j, 1);
+                    break;
+                }
+                if (j == that.photos.length - 1) isAll = false;
+            }
+        }
+        var photoArray = this.photos;
+        this.clearAll();
+        this.append(photoArray);
+        return isAll;
+    }
+    
+    GalleryBarrel.prototype.clearAll = function () {
         var gallery = document.querySelector(".gallery");
         gallery.innerHTML = "";
         this.photos = [];
@@ -402,7 +473,7 @@
         imgIsLoad(image, function (isLoadOver) {
             if (isLoadOver) {
                 that.photos = image;
-                that.layout.clear();
+                that.layout.clearAll();
                 that.layout.append(image);
             }
         })
@@ -434,8 +505,10 @@
             return;
         }
         
-        this.photos.concat(image);
-        this.layout.append(image);
+        if (this.getLayout == "PUZZLE") {
+            
+        }
+        else this.layout.append(image);
         
         //TODO
         
@@ -445,13 +518,19 @@
 
     /**
      * 移除相册中的图片
-     * @param  {(HTMLElement|HTMLElement[])} image 需要移除的图片
+     * @param  {(string|string[])} image 需要移除的图片
      * @return {boolean} 是否全部移除成功
      */
     IfeAlbum.prototype.removeImage = function (image) {
-        return this.layout.clear(image);
         
-        //TODO
+        if (typeof image === 'string') {
+            // 包装成数组处理
+            this.removeImage([image]);
+            return;
+        }
+        
+        return this.layout.clear(image);
+
     };
 
 
@@ -508,24 +587,15 @@
         this.gutter = [x, y];
         if (this.getLayout() == "WATERFALL") {
             var images = document.querySelectorAll('.gallery-item');
-            console.log(images);
-            for (var i = 0; i < images.length; i++) {
-                images[i].style.borderTop = (y / 2) + 'px solid #f0f0f0';
-                images[i].style.borderBottom = (y / 2) + 'px solid #f0f0f0';
-                images[i].style.borderLeft = (x / 2) + 'px solid #f0f0f0';
-                images[i].style.borderRight = (x / 2) + 'px solid #f0f0f0';
-            }
         }
         if (this.getLayout() == "BARREL") {
             var images = document.querySelectorAll('.gallery-item-wrapper');
-            console.log(images);
-            for (var i = 0; i < images.length; i++) {
-                console.log(images[i]);
-                images[i].style.marginTop = (y / 2) + 'px solid #f0f0f0';
-                images[i].style.marginBottom = (y / 2) + 'px solid #f0f0f0';
-                images[i].style.marginLeft = (x / 2) + 'px solid #f0f0f0';
-                images[i].style.marginRight = (x / 2) + 'px solid #f0f0f0';
-            }
+        }
+        for (var i = 0; i < images.length; i++) {
+            images[i].style.borderTop = (y / 2) + 'px solid #f0f0f0';
+            images[i].style.borderBottom = (y / 2) + 'px solid #f0f0f0';
+            images[i].style.borderLeft = (x / 2) + 'px solid #f0f0f0';
+            images[i].style.borderRight = (x / 2) + 'px solid #f0f0f0';
         }
         
     };
@@ -626,20 +696,20 @@
 
     /**
      * 获取木桶模式每行高度的上限
-     * @return {number} 最多图片数（含）
+     * @return {number} 最大高度
      */
     IfeAlbum.prototype.getBarrelHeightMax = function () {
-        
+        return this.layout.minHeight;
     };
 
 
 
     /**
      * 获取木桶模式每行高度的下限
-     * @return {number} 最少图片数（含）
+     * @return {number} 最小高度
      */
     IfeAlbum.prototype.getBarrelHeightMin = function () {
-        
+        return this.layout.maxHeight;
     };
 
 
@@ -668,5 +738,10 @@
 
 }(window));
 
-ifeAlbum.enableFullscreen();
-//ifeAlbum.setGutter(10,10);
+window.onload = function () {
+
+    //ifeAlbum.enableFullscreen();
+    //ifeAlbum.removeImage(["../src/img/1.png"])
+    //ifeAlbum.setGutter(10,10);
+    //ifeAlbum.addImage(["../src/img/1.png"])
+}
