@@ -96,3 +96,28 @@ html, body, .gallery {
   -webkit-clip-path: polygon(50% 0, 100% 0, 100% 100%, 0% 100%);
   clip-path: url(../clip.svg#trapezoid);
 }
+
+.modal {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    overflow: auto;
+    display: none;
+}
+
+.modal.active {
+    background-color: rgba(0, 0, 0, .6);
+    display: block;
+}
+
+.modal-container {
+    margin: 0px auto;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, .5);
+}
+
+.modal-image {
+    width: 100%;
+    display: block;
+}

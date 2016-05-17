@@ -1,5 +1,4 @@
-﻿(function (window) {
-
+﻿
     // 由于是第三方库，我们使用严格模式，尽可能发现潜在问题
     'use strict';
     
@@ -495,9 +494,85 @@
         //this.photos = _photos;
         return rows;
     }
+    
+    var Modal = function () {
+        var that = this;
+
+        this.modal = document.createElement('div');
+        this.modal.className = 'modal';
+        this.modal.innerHTML =
+
+            '<div class="modal-container"><img class="modal-image"></div>'
+
+        addEvent(this.modal, 'click', function (event) {
+            if (event.target == that.modal) {
+                that.modal.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            }
+        });
+        
+        this.container = this.modal.querySelector('.modal-container');
+
+        this.image = this.modal.querySelector('.modal-image')
+
+        document.body.appendChild(this.modal);
+    }
+
+    Modal.prototype.show = function (url, width, height) {
+        document.body.style.overflow = 'hidden';
+        this.modal.classList.add('active');
+
+        if (this.image.src != url) {
+            var imageAspectRatio = width / height;
+            var windowAspectRatio = innerWidth / innerHeight;
+
+            if (windowAspectRatio > imageAspectRatio) {
+                this.container.style.width = parseInt(innerHeight * imageAspectRatio) + 'px';
+            } 
+            else {
+                this.container.style.width = innerWidth + 'px';
+                this.container.style.marginTop = (innerHeight - innerWidth / imageAspectRatio) / 2 + 'px';
+            }
+
+            this.image.src = url;
+      }
+    }
+    
+    // 给一个element绑定一个针对event事件的响应，响应函数为listener
+    function addEvent(element, event, listener) {
+        if (element.addEventListener) {
+            element.addEventListener(event, listener, false);
+        }
+        else if (element.attachEvent) {
+            element.attachEvent("on" + event, listener);
+        }
+        else {
+            element["on" + event] = listener;
+        }
+    }
+
+    function imgIsLoad(urlArr, fn) {
+        var imgList = [], n = 0;
+        for(var i = 0, m = urlArr.length; i < m; i++){
+            imgList.push(new Image());
+            imgList[i].index = i;
+            imgList[i].src = urlArr[i];
+            imgList[i].onload = imgList[i].onerror = function() {
+                if(fn) {
+                    this.serial = n++;
+                    if(n === urlArr.length) fn.call(this, true);
+                    else fn.call(this, false);          
+                }   
+            }
+        }
+    }
 
 
-    function IfeAlbum() {
+    /**
+     * 
+     * @param {string} selector  插入布局的DOM结点地址
+     */
+    function IfeAlbum(selector) {
 
         // 布局的枚举类型
         this.LAYOUT = {
@@ -511,21 +586,13 @@
         
         this.isFullScreenEnabled = false;
         this.modal = new Modal();
-        this.setLayout(3);
-        this.setImage(["../src/img/1.png", "../src/img/2.png", "../src/img/3.png", "../src/img/4.png", "../src/img/5.png", "../src/img/6.png", "../src/img/7.png"])
-
+        this.selector = selector;
+        
     }
 
     // 私有变量可以写在这里
     // var xxx = ...
     
-    /*var layoutFunction = {
-        1: GalleryPuzzle,
-        2: GalleryWaterfall,
-        3: GalleryBarrel
-    }*/
-
-
 
     /************* 以下是本库提供的公有方法 *************/
 
@@ -620,13 +687,13 @@
         var that = this;
         switch(layout) {
             case 1:
-                that.layout = new GalleryPuzzle('.gallery');
+                that.layout = new GalleryPuzzle(that.selector);
                 break;
             case 2:
-                that.layout = new GalleryWaterfall('.gallery');
+                that.layout = new GalleryWaterfall(that.selector);
                 break;
             case 3:
-                that.layout = new GalleryBarrel('.gallery');
+                that.layout = new GalleryBarrel(that.selector);
                 break;
         }
         this.layout.name = Object.keys(this.LAYOUT)[layout - 1];
@@ -709,7 +776,7 @@
 
 
     /**
-     * 设置木桶模式每行图片数的上下限
+     * 设置木桶模式每行图片数的上下限(Not actually implement...)
      * @param {number} min 最少图片数（含）
      * @param {number} max 最多图片数（含）
      */
@@ -734,21 +801,21 @@
 
 
     /**
-     * 获取木桶模式每行图片数的上限
+     * 获取木桶模式每行图片数的上限(Not actually implement...)
      * @return {number} 最多图片数（含）
      */
     IfeAlbum.prototype.getBarrelBinMax = function () {
-
+        return this.layout.maxNum;
     };
 
 
 
     /**
-     * 获取木桶模式每行图片数的下限
+     * 获取木桶模式每行图片数的下限(Not actually implement...)
      * @return {number} 最少图片数（含）
      */
     IfeAlbum.prototype.getBarrelBinMin = function () {
-
+        return this.layout.minNum;
     };
 
 
@@ -816,15 +883,6 @@
     // 实例化
     if (typeof window.ifeAlbum === 'undefined') {
         // 只有当未初始化时才实例化
-        window.ifeAlbum = new IfeAlbum();
+        window.ifeAlbum = new IfeAlbum('.gallery');
     }
 
-}(window));
-
-window.onload = function () {
-
-    ifeAlbum.enableFullscreen();
-    //ifeAlbum.removeImage(["../src/img/1.png"])
-    //ifeAlbum.setGutter(10,10);
-    //ifeAlbum.addImage(["../src/img/1.png"])
-}
